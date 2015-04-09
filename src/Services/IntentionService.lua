@@ -58,8 +58,8 @@ function IntentionService:GetOptions(Target, LeftAction, RightAction)
 	-- Tool actions overrides NonTool actions
 	-- Actual processing of TARGETS should be done by a script
 	-- Not done in this service
-	local NonToolAction = nil; 
-
+	 -- NOT USED local NonToolAction = nil; 
+	-- Processed below VVVV 
 
 	-- Tools can cahce lasttarget;
 	-- If same: return same action
@@ -79,7 +79,7 @@ function IntentionService:GetOptions(Target, LeftAction, RightAction)
 		Possible = nil
 		InfoStrings = {},
 		WarningStrings = {}, 
-		TargetName = {},
+		TargetName = nil,
 		ToolActions = {
 			Left = nil, 
 			Right = nil,
@@ -154,22 +154,26 @@ function IntentionService:GetOptions(Target, LeftAction, RightAction)
 					local ActionWanted = ArgList[3]
 					if type(ActionWanted) == "string" then 
 						if ActionWanted == LeftAction then 
-
-						elseif ActionWanted == RightAction then 
-
-						else 
+							Out.Actions.LeftHand = ActionWanted 
+						end 
+						if ActionWanted == RightAction then 
+							Out.Actions.RightHand = ActionWanted
+						end 
+						if not Out.Actions.LeftHand and not Out.Actions.RightHand then 
 							Out.Gather.WarningStrings:insert("To gather this resource, you need a tool which can " .. ActionWanted .. '.')
 						end 
 					elseif type(ActionWanted) == "table" then 
 						-- ipairs, should be a list
 						local GotAction = false 
 						for i, ActionName in ipairs(ActionWanted) do 
-							if ActionName == LeftAction then 
+							if not Out.Actions.LeftHand and ActionName == LeftAction then 
 								GotAction = true 
-								-- Use right tool;
-							elseif ActionName == RightAction then 
+								Out.Actions.LeftHand = ActionName
+							end
+
+							if not Out.Actions.RightHand and ActionName == RightAction then 
 								GotAction = true 
-								-- Use left tool;
+								Out.Actions.RightHand = ActionName 
 							end 
 						end 
 						if not GotAction then 
@@ -179,22 +183,37 @@ function IntentionService:GetOptions(Target, LeftAction, RightAction)
 						end 
 					end 
 				end 	
+				if ArgList[4] then 
+					Out.Gather.TargetName = ArgList[4]
+				else 
+					Out.Gather.TargetName = Target.Name 
+				end 
 		else 
 			error("Unable to handle CheckGather type: " .. type(CheckGather))
 		end  
 	end 
 
+	-- Figure out if Left/Right actions have been set, else set to cached actions;
+
+	Out.Actions.LeftHand = Out.Actions.LeftHand or LeftAction
+	Out.Actions.RightHand = Out.Actions.RightHand or RightAction 
+
+
 	-- Now retrieve a list of DefaultACtions and run those, if no action is present
 
 	if not Out.Actions.LeftHand then 
 		for _,Action in pairs(self.Actions.Default) do 
-			if Action:Cache(Target) then 
+			local CanRun, NewName = Action:Cache(Target) 
+			if NewName and not Out.Gather.TargetName then 
+				Out.Gather.TargetName = NewName 
+			end 
+			if CanRun then 
 				Out.Actions.LeftHand = Action.Name 
 			end 
 		end 
 	end 
 
-
+	return Out 
 end 
 
 

@@ -1,0 +1,14 @@
+TODO
+
+Make Context accept instances
+Like this we can create a PropGroup (Contents) with "Properties" which are actually saved instances
+not lots of work but will be easier to implement buckets or other stuff
+
+Change IntentionService to handle Tool action caches;
+tool action cache itself should be update
+CommandsServer should be rewrited to work with Dmans and Statmans
+
+Let commands overflow from :Run to :RunServer. 
+
+Make a FIFO class. Necessary for Default actions, as least-priority actions are currently popped first.
+Other solution is just to create a PutFirst for actions where table.insert()
