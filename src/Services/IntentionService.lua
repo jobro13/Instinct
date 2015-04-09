@@ -1,5 +1,16 @@
 local IntentionService = {}
 
+-- Action fields -- 
+-- Name: identifier
+-- ActionName: if exists, return this as action name
+-- can be used to have more actions have same actionname
+-- Run: function to run on client
+-- Should return a bool if server must be invoked
+-- If yes, invoke server and run RunServer function
+
+-- Check: checks action given target and tool (if available)
+
+
 local ToolService, ObjectService, DamageService
 
 function IntentionService:Constructor()
@@ -9,175 +20,182 @@ function IntentionService:Constructor()
 	self.Actions = {}
 end
 
-function IntentionService:AddAction(Action)
-	if Action.Name and Action.Run then
-		self.Actions[Action.Name]=Action
-	end
-end
+-- Target can be a tool, non-tool, etc
+function IntentionService:AddAction(Action, Target)
+	local Target = Target or "Tool"
+	if not self.Actions[Target] then
+		self.Actions[Target] = {}
+	end 
+	self.Actions[Target][Action.Name] = Action 
+end 
 
-function IntentionService:DoAction(AName, Arg, Hand)
---	print(AName, self.Actions[AName])
-	if self.Actions[AName] then
-		table.insert(Arg, Hand)
-		self.Actions[AName]:Run(unpack(Arg))
-	end
-end
+function IntentionService:GetAction(Name)
+	for i,Targets in pairs(self.Actions) do 
+		for i, Action in pairs(Targets) do 
+			if Action.Name == Name then 
+				return Action 
+			end 
+		end 
+	end 
+end 
 
-function IntentionService:IsTool(Inst)
-	-- returns if Inst is a tool, very naive checking 
-	return Inst:IsDescendantOf(game.Workspace.Tools)
+-- For scalability create rules for different targets
+-- For now rules are inside jobs
+
+-- Get options for given target
+-- Returns a table with options;
+-- A table with reasons,
+-- A table with help messages,
+-- This function should be the main controller of tools and gather handlers
+function IntentionService:GetOptions(Target, LeftAction, RightAction)
+	-- Better if this gets LeftAction/RightActionb itself
+
+	----- GET ACTIONS FROM TOOLS -----
+	local LeftAction = nil;
+	local RightAction = nil;
+
+	-- Execute a list of possible actions
+	-- Tool actions overrides NonTool actions
+	-- Actual processing of TARGETS should be done by a script
+	-- Not done in this service
+	local NonToolAction = nil; 
+
+
+	-- Tools can cahce lasttarget;
+	-- If same: return same action
+	-- However before execute always recheck.
+	local Out = {}
+	local ToolService = _G.Instinct.ToolService 
+	local ObjectService = _G.Instinct.ObjectService 
+	local Object = ObjectService:GetObject(Target.Name)
+	local LeftTool, RightTool = ToolService.EquippedLeft, ToolService.EquippedRight
+	--@Start job Move
+	-- If can gather then move is also OK
+	-- Gather is NOK if Volume too high
+	Out.Move = {
+		Possible = nil -- Setting possible is a hard-set
+	}
+	Out.Gather = {
+		Possible = nil
+		InfoStrings = {},
+		WarningStrings = {}, 
+		TargetName = {},
+		ToolActions = {
+			Left = nil, 
+			Right = nil,
+		}
+	}
+	Out.Actions = {
+		LeftHand = LeftAction;
+		RightHand = RightAction; 
+		-- "no hand" tool for non-tool actions
+		NoHand = NonToolAction;
+	}
+
+	setmetatable(Out.Gather.WarningStrings, {__index=table})
+	setmetatable(Out.Gather.InfoStrings, {__index=table})
+
+	local function ParseAction(Action)
+
+
+	if Object.CheckGather then 
+		local Use = Object.CheckGather 
+		if type(Use) == "boolean" then 
+			if Use and ObjectService:GetVolume(Inst) > ObjectService:GetVolume(Target)
+				Out.Move.Possible = true 
+				Out.Gather.Possible = false 
+				Out.Gather.WarningStrings:insert("This resource is too large to gather.")
+			else 
+				Out.Gather.Possible = Use 
+			end	
+		elseif type(Use) == "function" then 
+			-- Expecting return values, in order;
+			-- Boolean CanGather
+			-- InfoList
+			-- Table which has following elements:
+			--> is string -> parsed as INFO if CanGather is true
+			--> is string -> parsed as WARN if CanGather is false
+			--> is table --> must have Style and Text element, if not, dropped
+			--			--> Style (Info/Warn / ?)
+						--> Text : passed string
+			-- > Required action to Gather (string Identifier, or a list of possible actions)
+			-- > optional arguments are deprecated as of Insv2
+				local ArgList = {Object:CheckGather(Target)}
+				local CanGather = ArgList[1]
+				if type(CanGather) ~= "bool" then
+					error("Cannot parse CheckGather rule for " .. Target.Name .. " because a non-bool is returned")
+				end 
+				Out.Gather.Possible = CanGather 
+				if ArgList[2] then 
+					-- Detect Standard message type
+					local StdMessage = (CanGather and "Info") or (not CanGather and "Warning")
+					local TargetTable = Out.Gather[StdMessage.."String"]
+					for i, data in pairs(ArgList[2]) do 
+						if type(data) == "table" then 
+							if data.Style and data.Text then 
+								local TargetTable = Out.Gather[data.Style.."String"]
+								if not TargetTable then 
+									error("Style unknown: " .. data.Style)
+								end 
+								TargetTable:insert(data.Style)
+							else 
+								error("Cannot parse malformed data: data not right formatted, stopping")
+							end 
+						elseif type(data) == "string" then 
+							-- Putting it in Std table
+							TargetTable:insert(data)
+						else 
+							error("Cannot parse wlist data of type " .. data.Type .. " unknown handler")
+						end 
+					end
+				end 
+				-- parse wanted action identifier
+				if ArgList[3] then 
+					local ActionWanted = ArgList[3]
+					if type(ActionWanted) == "string" then 
+						if ActionWanted == LeftAction then 
+
+						elseif ActionWanted == RightAction then 
+
+						else 
+							Out.Gather.WarningStrings:insert("To gather this resource, you need a tool which can " .. ActionWanted .. '.')
+						end 
+					elseif type(ActionWanted) == "table" then 
+						-- ipairs, should be a list
+						local GotAction = false 
+						for i, ActionName in ipairs(ActionWanted) do 
+							if ActionName == LeftAction then 
+								GotAction = true 
+								-- Use right tool;
+							elseif ActionName == RightAction then 
+								GotAction = true 
+								-- Use left tool;
+							end 
+						end 
+						if not GotAction then 
+							-- Notify player of tools;
+							-- Doesn't work well with string formatting if #Args > 2
+							Out.Gather.WarningStrings:insert("To gather this resource, you need a tool which can ".. table.concat(ActionWanted, " or ") .. ".")
+						end 
+					end 
+				end 	
+		else 
+			error("Unable to handle CheckGather type: " .. type(CheckGather))
+		end  
+	end 
+
+	-- Now retrieve a list of DefaultACtions and run those, if no action is present
+
+	if not Out.Actions.LeftHand then 
+		for _,Action in pairs(self.Actions.Default) do 
+			if Action:Cache(Target) then 
+				Out.Actions.LeftHand = Action.Name 
+			end 
+		end 
+	end 
+
+
 end 
 
 
-
--- left/right action are strings of cached left/right actions for given inst
-
-function IntentionService:CanGather(Inst, LeftAction, RightAction)
-	local CanMove = false
-	local LeftTool = ToolService.EquippedLeft
-	local RightTool = ToolService.EquippedRight
-	local obj = ObjectService:GetObject(Inst.Name)
-	local bool, rlist, oaction
-	local oaction = oaction or {}
-	local UseName
-	if obj  and obj.CheckGather then
-		local func = obj.CheckGather
-		if type(func) == "boolean" then
-			if func and ObjectService:GetVolume(Inst) > ObjectService.MaximumGatherVolume then
-				bool, rlist = false, {"This resource is too large to gather. Move it with the move tool."}
-				CanMove = true
-			else 
-				bool, rlist = func, {}
-			end
-		else
-			-- Call the function. This will be called with
-			-- one arg: Inst.
-			-- The function should return:
-			--> can gather (bool)
-			--> if not can gather ->
-			--> provide the ReasonList
-			--> provide which action would be necessary.
-			local CanGather, Reasons, ActionNeeded -- oaction not local pls.
-			CanGather, Reasons, ActionNeeded, oaction = func(obj, Inst)
-			oaction = oaction or {}
-			if CanGather then
-				if ObjectService:GetVolume(Inst) > ObjectService.MaximumGatherVolume then
-					bool,rlist =  false, {"This resource is too large to gather. Move it with the move tool."}
-				else
-					bool, rlist = true, {}
-				end
-			end
-			if type(ActionNeeded) == "table" then 
-				local has_equipped=false
-				for _, Action in pairs(ActionNeeded) do 
-					if Action == LeftAction then 
-						has_equipped = "left"
-						break
-					elseif Action == RightAction then 
-						has_equipped = "right"
-						break
-					end
-				end
-				if has_equipped then 
-					bool, rlist = false, Reasons 
-				else
-					bool, rlist = false, {"Use your "..has_equipped.."-handed tool to do the required action"}
-				end
-			elseif type(ActionNeeded) == "string" then
-				if ActionNeeded == LeftAction then 
-					bool, rlist = false, {"Use your left-handed tool to do the required action"}
-				elseif ActionNeeded == RightAction then 
-					bool, rlist = false, {"Use your right-handed tool to do the required action"}
-				else 
-					bool, rlist = false, Reasons 
-				end
-			elseif not CanGather then
-				warn("got strange exception from INTSERV: "..(tostring(ActionNeeded)))
-				if type(ActionNeeded) == "table" then
-					for i,v in pairs(ActionNeeded) do
-					--	print(tostring(i), tostring(v))
-					end
-				end
-				bool, rlist = false, {"cannot gather; unknown reason;"}
-			end
-		end
-	end
-	
-	-- here, check for actions lft/right hand and for cooldown, change
-	-- info accordingly
-	
-	if not oaction.Left and not oaction.Right then
-		local function hashumanoid(t)
-			local c = t
-			repeat
-				c = c.Parent
-			until (c and c:FindFirstChild("Humanoid")) or not c
-			if c and c:FindFirstChild("Humanoid") then
-				return true, c.Name
-			end
-		end
-		-- start general procedure to check if we want anything else!
-		local has, name = hashumanoid(Inst)
-		if Inst:IsDescendantOf(game.Workspace.Corpses) then
-			-- uhoh.
-			rlist = {}
-			local n = Inst 
-			while n.Parent ~= game.Workspace.Corpses do
-				n = n.Parent
-			end
-			-- we found root which is n.
-			local cName = n.Name 
-			bool = false 
-			if n:FindFirstChild("Clothing") and Inst:IsDescendantOf(n.Clothing) then
-				if n.Clothing:FindFirstChild("Backpack") then
-					if Inst == n.Clothing.Backpack or Inst:IsDescendantOf(n.Clothing.Backpack) then
-						-- it backpack!
-						UseName = "Backpack of "..cName
-						oaction = {Left = "Inspect Backpack"}
-					end
-				end
-			end
-			if not oaction.Left then
-				UseName = "Corpse of " .. cName
-				table.insert(rlist, "I wonder what happened...")
-			end
-		elseif has then
-			UseName = name -- show player name on hover;
-			local temp = oaction or {}
-			local changed = false
-			if LeftTool then
-				local Info = DamageService:GetDamageInfo(LeftTool, Inst)
-				if Info then
-					temp.Left = "Attack"
-					changed = true
-				end
-			end
-			if RightTool then
-				local Info = DamageService:GetDamageInfo(RightTool, Inst)
-				if Info then
-					temp.Right = "Attack"
-					changed = true
-				end
-			end
-			if changed then
-				oaction = temp
-			end
-		end
-		
-	end
-	
-	if bool == nil then 
-		bool= false
-	end
-	
-	if rlist == nil then
-		rlist = {}
-	end
-	
-	if bool and Inst:IsDescendantOf(game.Workspace.Buildings) or Inst:IsDescendantOf(game.Workspace.Tools) or Inst:IsDescendantOf(game.Workspace.Garbage) then	
-		bool=false
-	end
-	return bool, (rlist or {}), (oaction or {}), UseName, CanMove
-end
-
-return IntentionService
+return IntentionService 

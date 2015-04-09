@@ -77,15 +77,16 @@ function InspectBackpack:Run(targ)
 		end
 	end
 end
-	
 
--- Shake tree action LOL KAPPA XDDDDD JOBRO SO FUCKING TRASH-- 	
+------------------------ END OF ACTION	
+
+-- Shake tree action 
 local ShakeTree = mk "Shake tree"
 
 function ShakeTree:Run(targ)
 	print("oh very shake tree Kappa")
 end
-
+------------------------ END OF ACTION
 -- Attack action --
 local Attack = mk "Attack"
 
@@ -98,7 +99,7 @@ function Attack:Run(Targ, Hand)
 		DamageService:Attack(Tool, Targ)
 	end
 end
-
+------------------------ END OF ACTION
 for _,action in pairs(toadd) do
 	IntentionService:AddAction(action)
 end

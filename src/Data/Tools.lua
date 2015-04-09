@@ -341,12 +341,15 @@ end
 
 -- OVERRIDE
 -- Cache action returns an ACTION NAME
-function DefaultTool:CacheAction()
-	
+-- Cache action for target;
+function DefaultTool:CacheAction(Target)
+	if self.Cached then 
+		return self.Cached[Target]
+	end 
 end
 
-function DefaultTool:DoAction(MouseButton)
-	
+function DefaultTool:DoAction(MouseButton, Action)
+	self.Cached[]
 end
 
 function DefaultTool:GetGrip()
