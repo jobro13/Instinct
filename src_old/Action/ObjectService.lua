@@ -1,0 +1,2 @@
+lolwat
+print 'Hello world!'
