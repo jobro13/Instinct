@@ -71,5 +71,23 @@ Simple flowchart for actions:
 *-> If no action has been defined for left, figure out if a default action can be done, if so, push that
 *-> Elseif cangather -> Put gather as left action
 
+### Tool Hooks
+
+In order to maintain flexibility, tool hooks can be added. For Instance, the following functions may be defined and have the same effects as roblox events;
+
+*	Tool:Equip()
+*	Tool:Unequip() 
+
+The first function *does something* and the second one should GC this. 
+
+*	Tool:Create()
+
+Constructor. Called on Tool creation.
+
+*	Tool:Destroy()
+
+Destroying a tool is the function which gets called when a tool gets converted to a normal instance again. Think of dropping the tool.
+
+Note that :Equip() and :Unequip() allow GUI support. via the Tool argument passed on to Actions these hooks can figure out if, for example, a bucket is filled with water. The actual filling could be shown in the GUI.
 
 
