@@ -91,6 +91,7 @@ function ToolService:ChangeHand(tool)
 end
 
 -- setups st00f
+-- Could be made shorter by adding helper functions to auto-update the data for equipped tools.
 function ToolService:GeneralEquip(tool)
 	
 	if tool.IsEquipped then
@@ -147,6 +148,7 @@ function ToolService:GeneralEquip(tool)
 	ToolGui:UpdatePositions()	
 end
 
+-- Bug: self.EquippedNP does /not/ get updated when unequpped. Fixed as of TSv2
 function ToolService:GeneralUnequip(tool)
 	print("unequipping a tool")
 	tool.IsEquipped = false
@@ -156,11 +158,17 @@ function ToolService:GeneralUnequip(tool)
 			if self.EquippedRight then
 				self.EquippedRight.Other = nil
 			end
+			if self.EquippedNP then 
+				self.EquippedNP.OtherLeft = nil
+			end 
 			self.EquippedLeft = nil
 		elseif tool.Hand == "Right" then
 			if self.EquippedLeft then
 				self.EquippedLeft.Other = nil
 			end
+			if self.EquippedNP then 
+				self.EquippedNP.OtherRight = nil 
+			end 
 			self.EquippedRight = nil
 		end
 	elseif tool.Type == "NonPhysical" then
