@@ -184,7 +184,6 @@ function ToolService:GeneralUnequip(tool)
 end
 
 function ToolService:Enable()
-
 	KeyService.KeyDown:connect(function(key, state)
 		if key then 
 			if key == "m1" or key == "m2" then

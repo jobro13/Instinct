@@ -1,5 +1,6 @@
 -- DataManager
 -- Used to Create/Get/Write to Server data (and create this data) in an organized way
+-- Can be called from Client too; Player is then set to LocalPlayer if not provided.
 
 local DataManager = {}
 DataManager.ContainerClassName = "Folder"
@@ -33,6 +34,15 @@ function DataManager:PlayerGetStat(StatName, Player)
 	if not StatName or not Player then
 		error("Missing argument @DataManager:PlayerGetStat")
 	end
+	-- return the StatValue here;
 end
+
+function DataManager:PlayerIncreaseStat(StatName,Value,Player)
+	local Player = Player or game.Players.LocalPlayer 
+	if not ( StatName and Player and Value ) then 
+		error("Missing argument @DataManager:PlayerIncreaseStat")
+	end 
+	-- increase statvalue
+end 
 
 return DataManager
