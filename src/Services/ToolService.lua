@@ -134,6 +134,9 @@ function ToolService:GeneralEquip(tool)
 				self.EquippedRight.Other = tool
 			end
 			tool:Equip()
+			if tool.ToolEquip then 
+				tool:ToolEquip()
+			end 
 		elseif tool.Hand == "Right" then
 			if self.EquippedRight then
 				self:GeneralUnequip(self.EquippedRight)
@@ -148,6 +151,9 @@ function ToolService:GeneralEquip(tool)
 				self.EquippedLeft.Other = tool
 			end
 			tool:Equip()
+			if tool.ToolEquip then 
+				tool:ToolEquip()
+			end 
 		end
 	elseif tool.Type == "NonPhysical" then
 		if self.EquippedNP then
@@ -163,6 +169,9 @@ function ToolService:GeneralEquip(tool)
 			self.EquippedRight.OtherNP = tool
 		end
 		tool:Equip()
+		if tool.ToolEquip then 
+			tool:ToolEquip()
+		end 
 	end
 	tool.IsEquipped = true
 	ToolGui:UpdatePositions()	
@@ -173,6 +182,9 @@ function ToolService:GeneralUnequip(tool)
 	print("unequipping a tool")
 	tool.IsEquipped = false
 	tool:Unequip()
+	if tool.ToolUnequip then 
+		tool.ToolUnequip()
+	end 
 	if tool.Type == "Normal" then
 		if tool.Hand == "Left" then
 			if self.EquippedRight then
@@ -275,6 +287,25 @@ function ToolService:AddTool(ToolInstance,PickedUp)
 	-- Create a new tool 
 	local Tool = _G.Instinct:Create(UsedTool) or _G.Instinct:Create(self.RegisteredTools.DefaultTool)
 	Tool.Tool = ToolInstance 
+
+	-- Setup Tool
+	-- Copy :ToolCreate :ToolDestroy ToolUnequip ToolEquip
+
+	local ToCheck = {
+		"ToolCreate", 
+		"ToolDestroy", 
+		"ToolUnequip",
+		"ToolDestroy"
+	}
+
+	local Object = ObjectService:GetObject(ToolName)
+
+	for _, MemberName in pairs(ToCheck) do 
+		if Object[MemberName] then 
+			Tool[MemberName] = Object[MemberName]
+		end 
+	end 
+
 	-- Assign hotkey to tool
 	self:SetHotkey(Tool, self:GetNewHotkey(Tool))
 	-- If it is a PhysicalTool
@@ -285,6 +316,10 @@ function ToolService:AddTool(ToolInstance,PickedUp)
 
 	-- Call UI hook
 	ToolGui:AddTool(Tool)
+
+	if Tool.ToolCreate then 
+		Tool:ToolCreate() 
+	end 
 end 
 
 
@@ -309,6 +344,10 @@ function ToolService:RemoveTool(ToolInstance)
 	scanl(self.EquippedRight, "Other")
 	-- cannot drop nonphysical tools so, thats not a porblem
 	ToolGui:RemoveTool(tool)
+
+	if tool.ToolDestroy then 
+		tool:ToolDestroy() 
+	end 
 end
 
 -- serversided!
