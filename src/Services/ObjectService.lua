@@ -60,6 +60,7 @@ function ObjectService:GetVolume(RBX_Inst)
 	if not RBX_Inst then 
 		error("Missing argument @ObjectService:GetVolume")
 	end 
+	local RBX_Inst = self:GetMainPartRoot(RBX_Inst)
 	-- First check for a CustomVolume rule
 	-- Should get around ugly stuff like axes with parts in it
 	local Obj = self:GetObject(RBX_Inst.Name)
@@ -85,7 +86,7 @@ function ObjectService:GetSize(RBX_Inst)
 	if not RBX_Inst then 
 		error("Missing argument @ObjectService:GetSize")
 	end 
-
+	local RBX_Inst = self:GetMainPartRoot(RBX_Inst)
 	if RBX_Inst:IsA("BasePart") then 
 		return RBX_Inst.Size 
 	elseif RBX_Inst:IsA("Model") then 
@@ -148,6 +149,7 @@ function ObjectService:GetSaveData(Inst)
 	-- Dump properties inside table
 
 	local Object = self:GetObject(Inst.Name)
+	local Inst = self:GetMainPartRoot(Inst)
 	if not Object then 
 		error("Cannot save; object unknown")
 	end 
@@ -285,6 +287,8 @@ end
 function ObjectService:GetMainPart(Inst)
 	if Inst.Parent:IsA("Model") and Inst.Parent.PrimaryPart then
 		return Inst.Parent.PrimaryPart
+	elseif Inst:IsA("Model") and Inst.PrimaryPart then  
+		return Inst.PrimaryPart
 	else
 		if Inst.Name == "chParent" then
 			return Inst.Parent
@@ -296,7 +300,9 @@ end
 function ObjectService:GetMainPartRoot(Inst)
 	if Inst.Parent:IsA("Model") and Inst.Parent.PrimaryPart then
 		return Inst.Parent
-	else
+	elseif Inst:IsA("Model") and Inst.PrimaryPart then  
+		return Inst 
+	else 
 		if Inst.Name == "chParent" then
 			return Inst.Parent
 		end

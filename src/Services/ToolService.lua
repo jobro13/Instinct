@@ -406,6 +406,11 @@ function ToolService:CreateNormalTool(Player, Resource)
 end
 
 function ToolService:ToSaveData(ToolRoot)
+	-- well
+	local ResourceName = ToolRoot.Name 
+	--local 
+
+
 	local out = {} -- q data
 	out.Name = ToolRoot.Name
 	-- gewd
