@@ -56,7 +56,7 @@ local IsLocal = (game.Players.LocalPlayer ~= nil)
 
 function ToolService:Constructor()
 	if not IsLocal then
-		DataManager = _G.Instinct.Services.DataManager
+		DataManager = _G.Instinct.Player.DataManager
 	else 
 		ToolGui = _G.Instinct.UI.ToolGui
 	end
@@ -366,43 +366,43 @@ function ToolService:GetNewHotkey(tool)
 	end
 end
 
--- {objname = {objectlist}}
--- dafuq does objectlist do
--- should just provide root instance
-function ToolService:CreateNormalTool(Player, ToolName, ObjectList)
+-- Converts normal resource to a tool. not a big deal
+-- just put it in a model, if it isn't in there yet.
+-- Model is provided as of Insv2, so no problem with naming arises.
+function ToolService:CreateNormalTool(Player, Resource)
 	
 	-- lets first create a root container
-	if not IsLocal then
-		local troot = DataManager:GetContainer("Tools", Player)
-		warn(tostring(troot))
-		if troot then
-			if #(troot:GetChildren()) >= self.MaxTools then
-				if _G.Instinct.Mechanics.Chat then
-					_G.Instinct.Mechanics.Chat:Send("You cannot create the tool: " .. ToolName .. " because you already have " .. self.MaxTools .. " tools!", Player)
-				end
-				return
-			end
-			warn(tostring(self.RegisteredTools[ToolName]))
-			if self.RegisteredTools[ToolName] then
-				local new = Instance.new("Model")
-				new.Name = ToolName
-				local Items = Instance.new("Model", new)
-				Items.Name = "Items" -- where tool is built from
-				local ToolModel = Instance.new("Model", new)
-				ToolModel.Name = "Tool" -- where tool is put in later hue?
-				for objname, objects in pairs(ObjectList) do
-					local mod = Instance.new("Model", Items)
-					mod.Name = objname
-					for i, object in pairs(objects) do
-						object.Parent = mod
-					end
-				end
-				self.RegisteredTools[ToolName]:Create(ToolModel, ObjectList)				
-				
-				new.Parent = troot -- call ChildAdded on client ^_^
-			end
-		end
-	end
+	if not IsLocal then 
+		local ToolContainer = DataManager:GetContainer("Tools", Player)
+		-- Check for too many tools 
+		if #(ToolContainer:GetChildren()) >= self.MaxTools then 
+			-- Cannot add a tool , too many tools 
+			-- Note: problems arise with this setup for tool belt game mechanic. No work.
+			-- Send over chat? 
+			-- This, too, should be sent as notification via some service.			
+			local Chat = _G.Instinct.Mechanics.Chat 
+			Chat:Send("You cannot equip this " .. Resource.Name ..", because you already have " .. self.MaxTools .. " tools available!", Player)
+			
+		else 
+			-- CreateNormal tool implies this is a physical tool 
+			-- Must we first run a Move operation via ObjectService?
+			-- Or does this always imply that this already happened..?
+			-- No it doesn't.
+			ObjectService:ApplyRules(Resource, "MoveRuleList", "Move")
+			-- to equip; GetChildren()[1]. Everything is put in a model. 
+			local Mod = Instance.new("Model", ToolContainer)
+			Mod.Name = Resource.Name 
+			Resource.Parent = Mod 
+			Mod.Parent = ToolContainer -- Fires @AddTool at client
+
+			-- Optional context stuff here --
+
+			-- Equip, hotkey, blabla
+		end 
+	else 
+		error("This is a server-sided function")	
+	end 
+
 end
 
 function ToolService:ToSaveData(ToolRoot)

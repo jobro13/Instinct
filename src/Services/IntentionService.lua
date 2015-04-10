@@ -213,6 +213,13 @@ function IntentionService:GetOptions(Target, LeftAction, RightAction)
 		end 
 	end 
 
+	if Out.Gather.Possible then 
+		if 	Inst:IsDescendantOf(game.Workspace.Buildings) or Inst:IsDescendantOf(game.Workspace.Tools) or Inst:IsDescendantOf(game.Workspace.Garbage) then	
+			Out.Gather.Possible = false 
+		end 
+	end 
+
+
 	return Out 
 end 
 

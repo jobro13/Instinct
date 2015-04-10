@@ -12,3 +12,7 @@ Let commands overflow from :Run to :RunServer.
 
 Make a FIFO class. Necessary for Default actions, as least-priority actions are currently popped first.
 Other solution is just to create a PutFirst for actions where table.insert()
+
+Add cooldown API to tools
+
+Add the SetProperty on client to work with server calls

@@ -90,4 +90,13 @@ Destroying a tool is the function which gets called when a tool gets converted t
 
 Note that :Equip() and :Unequip() allow GUI support. via the Tool argument passed on to Actions these hooks can figure out if, for example, a bucket is filled with water. The actual filling could be shown in the GUI.
 
+### Tool data structure
 
+If a tool has a complex structure (such as Axes with handles) then this structure must be saved and loading used Context rules. These are Save/Load rules with Context..ContextProperty as name. These should prepare the returned roblox object.
+
+The new Instinct version has deprecated models which use the chParent strucure (which wasn't elegant anyways). Now models should have their PrimaryPart set. ObjectService functions will handle these.
+
+For example, an axe with a handle should have the primarypart set to handle. Grips are calculated according to this PrimaryPart, which would be the equivalent Handle object in roblox tools. 
+
+Context Group "Tool" will be used to store info such as hotkeys and equipped state.
+Server side handling: The tool MODEL is loaded. PrimaryPart is either the sole part in it or a complete tool. Once equip the whole model is copied
