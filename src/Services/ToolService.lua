@@ -64,9 +64,29 @@ function ToolService:Constructor()
 	ObjectService = _G.Instinct.Services.ObjectService
 	Object = _G.Instinct.Class.Object
 	self.Tools = {}
---	self.RegisteredTools = {}
+	self.RegisteredTools = {}
 	-- self.DefaultTool is IMPORANT!!	
 --	setmetatable(self.RegisteredTools,{__index = function() return self.DefaultTool end})
+end
+
+function ToolService:RegisterTool(Name, Tool)
+	if not Tool.Type then
+		error("didnt register tool because no type.")
+	elseif Tool.Type == "Normal" then
+		if Tool.Create and Tool.DoAction then
+			self.RegisteredTools[Name] = Tool
+		else
+			error("didnt register because tool doesnt have a create and action funciton")
+		end
+	elseif Tool.Type == "NonPhysical" then
+		if Tool.DoAction then
+			self.RegisteredTools[Name] = Tool
+		else
+			error("tool doenst have create func")
+		end
+	else
+		error("tool doesnt have type")
+	end
 end
 
 function ToolService:ChangeHand(tool)
@@ -233,50 +253,46 @@ function ToolService:Enable()
 		until self.ToolRoot
 	end
 	self.ToolRoot.ChildAdded:connect(function(toolroot)
-		print('added tool kewl', toolroot.Name)
-		self:AddTool(toolroot)
+		self:AddTool(toolroot,true)
 	end)
 	self.ToolRoot.ChildRemoved:connect(function(toolroot)
-		print('removing tool nu', toolroot.Name)
 		self:RemoveTool(toolroot)
 	end)
 	for i,v in pairs(self.ToolRoot:GetChildren()) do
-		self:AddTool(v)
+		self:AddTool(v,false)
 	end
 end
 
-function ToolService:AddTool(root)
-	wait()
-	print("ADDED TOOL")
-	local tname = root.Name
- 	local tool = self.RegisteredTools[tname]
-	print(tool)
-	if tool then
-		local new = tool:GetDelegate()
-		self:SetHotkey(new, self:GetNewHotkey(new))
-		if new.Type ~= "NonPhysical" then
-			new.Tool = root:FindFirstChild("Tool"):GetChildren()[1]
-			new.ToolRoot = root
-		end
-		table.insert(self.Tools, new)
-		-- add a hotkey
-		--print('call getnewhotkey', new)
-	--	self:GetNewHotkey(new)
-		-- call gui update
-		if new.Type ~= "NonPhysical" then
-			self:GeneralEquip(new)
-		end
-		ToolGui:AddTool(new)
-		
-		print("DONE")
-	end
-end
 
-function ToolService:RemoveTool(root)
+
+-- Provide roblox instance to load
+-- TODO: ADD HOOKS FOR TOOL CONTEXT
+-- Should equip if tthe context equip is set to true
+-- Else, also equip it if picked up.
+function ToolService:AddTool(ToolInstance,PickedUp)
+	local ToolName = ToolInstance.Name 
+	local UsedTool = self.RegisteredTools[ToolName]
+	-- Create a new tool 
+	local Tool = _G.Instinct:Create(UsedTool) or _G.Instinct:Create(self.RegisteredTools.DefaultTool)
+	Tool.Tool = ToolInstance 
+	-- Assign hotkey to tool
+	self:SetHotkey(Tool, self:GetNewHotkey(Tool))
+	-- If it is a PhysicalTool
+	-- WHich is picked up; equip it.
+	if Tool.Type ~= "NonPhysical" and PickedUp then 
+		self:GeneralEquip(Tool)
+	end 
+
+	-- Call UI hook
+	ToolGui:AddTool(Tool)
+end 
+
+
+function ToolService:RemoveTool(ToolInstance)
 	-- remove from self.Tools
 	local tool
 	for i,v in pairs(self.Tools) do
-		if v.ToolRoot == root then
+		if v.Tool == ToolInstance then
 			tool = v
 			table.remove(self.Tools, i)
 			break
@@ -296,6 +312,8 @@ function ToolService:RemoveTool(root)
 end
 
 -- serversided!
+-- ty..?
+-- nevertheless should be removed RIGHT HERE
 function ToolService:DropTool(tool)
 	
 end
@@ -333,10 +351,8 @@ function ToolService:GetNewHotkey(tool)
 			-- custom building tool.
 		end
 	end
-	print("in gnh, ", tool)
 	local cp = {}
 	for i,v in pairs(self.PossibleHotkeys) do
-		
 		cp[v] = true
 	end
 	for i, tool in pairs(self.Tools) do
@@ -351,11 +367,13 @@ function ToolService:GetNewHotkey(tool)
 end
 
 -- {objname = {objectlist}}
+-- dafuq does objectlist do
+-- should just provide root instance
 function ToolService:CreateNormalTool(Player, ToolName, ObjectList)
 	
 	-- lets first create a root container
 	if not IsLocal then
-		local troot = DataManager:GetContainer(Player, "Tools")
+		local troot = DataManager:GetContainer("Tools", Player)
 		warn(tostring(troot))
 		if troot then
 			if #(troot:GetChildren()) >= self.MaxTools then
