@@ -47,7 +47,13 @@ end
 -- A table with reasons,
 -- A table with help messages,
 -- This function should be the main controller of tools and gather handlers
-function IntentionService:GetOptions(Target, LeftAction, RightAction)
+
+--ForceReload to overwrite cache
+function IntentionService:GetOptions(Target, LeftAction, RightAction, ForceReload)
+	if self.CachedTarget == Target and not ForceReload then 
+		return self.CachedOptions
+	end 
+
 	-- Better if this gets LeftAction/RightActionb itself
 
 	----- GET ACTIONS FROM TOOLS -----
@@ -219,6 +225,8 @@ function IntentionService:GetOptions(Target, LeftAction, RightAction)
 		end 
 	end 
 
+	self.CachedTarget = Target
+	self.CachedOptions = Out
 
 	return Out 
 end 

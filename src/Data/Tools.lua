@@ -36,8 +36,6 @@ function Eat:OnEquip()
 	delay(0, function()
 		local Mouse = game.Players.LocalPlayer:GetMouse()
 		while Instinct.Services.KeyService.State == "Eating" do
-			
-			
 			local targ = Mouse.Target
 			if targ and NutritionService:IsEdible(targ) then
 				local data = NutritionService:GetNutritionInfo(targ)
@@ -123,7 +121,8 @@ function Move:DoAction(mbutton)
 				end
 			end
 			if usetarg and o then 
-				if select(5,_G.Instinct.Services.IntentionService:CanGather(usetarg)) then
+				-- LOL!?
+				if _G.Instinct.Services.IntentionService:CanGather(usetarg).Move.Possible then
 						local omg = usetarg
 						if omg then
 							if not NormalMover.GettingMoveRoot then
@@ -142,6 +141,9 @@ function Move:DoAction(mbutton)
 		end
 	end
 end
+
+function IntentionService
+
 ToolService:RegisterTool("Move", Move)
 
 
@@ -195,7 +197,7 @@ function Build:DoAction(mbutton)
 				end
 			end
 			if usetarg and o then 
-					if select(5,_G.Services.IntentionService:CanGather(usetarg)) then
+					if _G.Instinct.Services.IntentionService:GetOptions() then
 						local omg = Instinct.Services.ObjectService:GetMainPartRoot(targ)
 						if omg then
 							if not Mover.GettingMoveRoot then
