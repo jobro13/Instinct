@@ -1,17 +1,24 @@
 -- manages tool equipping / unequipping, etc
 
+-- ToolService rewrite 
+-- Following definitions defined into ResourceApi
+-- Main changes; Tools are not instances anymore but are now Instinct Objects
+-- Also added the hooks as defined in Resource API
+
+
+
 local ToolService = {}
 
-
-
+--EL ER NP tool equipped pointers, general purpose
 ToolService.EquippedLeft = nil
 ToolService.EquippedRight = nil
 ToolService.EquippedNP = nil -- nonphysical equipped
 
+-- Maximal physical tools. Can be used later for upgrades to a tool belt
 ToolService.MaxTools = 10
 
+-- Hotkeys because UserInputService currently is acting strange
 ToolService.PossibleHotkeys = {
-	
 	Enum.KeyCode.One,
 	Enum.KeyCode.Two,
 	Enum.KeyCode.Three,
@@ -27,6 +34,7 @@ ToolService.PossibleHotkeys = {
 	Enum.KeyCode.E, -- very hackihs.
 }
 
+-- Prepare data; ( in order as of above, tostring doesn't work as "Zero" isnt a nice GUI name)
 ToolService.HotkeyNames = {
 	 "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "M", "B", "E"
 }
@@ -56,56 +64,28 @@ function ToolService:Constructor()
 	ObjectService = _G.Instinct.Services.ObjectService
 	Object = _G.Instinct.Class.Object
 	self.Tools = {}
-	self.RegisteredTools = {}
+--	self.RegisteredTools = {}
 	-- self.DefaultTool is IMPORANT!!	
-	setmetatable(self.RegisteredTools,{__index = function() return self.DefaultTool end})
+--	setmetatable(self.RegisteredTools,{__index = function() return self.DefaultTool end})
 end
-
-function ToolService:RegisterTool(Name, Tool)
-	if not Tool.Type then
-		error("didnt register tool because no type.")
-	elseif Tool.Type == "Normal" then
-		if Tool.Create and Tool.DoAction then
-			self.RegisteredTools[Name] = Tool
-		else
-			error("didnt register because tool doesnt have a create and action funciton")
-		end
-	elseif Tool.Type == "NonPhysical" then
-		if Tool.DoAction then
-			self.RegisteredTools[Name] = Tool
-		else
-			error("tool doenst have create func")
-		end
-	else
-		error("tool doesnt have type")
-	end
-end
-
 
 function ToolService:ChangeHand(tool)
 	if tool.Type == "Normal" then
 		local waseq = tool.IsEquipped
-		print(waseq, 'chke', tool.Hand)
 		if tool.Hand == "Left" then
-
 			if self.EquippedRight then
-			
 				self:GeneralUnequip(self.EquippedRight)
 			end
 			tool.Hand = "Right"
 		else
-
 			if self.EquippedLeft then
-				
 				self:GeneralUnequip(self.EquippedLeft)
 			end
 			tool.Hand = "Left"
 		end
 		if waseq then
-		
 			self:GeneralUnequip(tool)
 			self:GeneralEquip(tool)
-		
 		end
 	end 
 end

@@ -2,6 +2,10 @@ local Tool = {}
 
 -- ! adding useful properties? add them to cpy list too. (in delegate function)
 
+-- Tool is an extension class of Object and should only be used when an Object is used as Tool
+-- Tool provides welding functions and the communications to the server. ToolService should be the service to call this.
+-- ToolService should be called from handler scripts which connect ToolServie to the UI
+
 Tool.Grip = nil -- cf
 
 Tool.IsEquipped = false
