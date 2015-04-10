@@ -405,42 +405,21 @@ function ToolService:CreateNormalTool(Player, Resource)
 
 end
 
+-- This function got very short after the upgrade
+-- Provide highest level toolroot, directly under the save container
 function ToolService:ToSaveData(ToolRoot)
 	-- well
 	local ResourceName = ToolRoot.Name 
 	--local 
-
-
-	local out = {} -- q data
-	out.Name = ToolRoot.Name
-	-- gewd
-	out.Items = {}
-	local items = ToolRoot:FindFirstChild("Items")
-	if items then
-		for i, container in pairs(items:GetChildren()) do
-			out.Items[container.Name] = {}
-			for id, item in pairs(container:GetChildren()) do 
-				table.insert(out.Items[container.Name], ObjectService:GetSaveData(item))
-			end
-		end
-	end
-	return out
+	local TargetInstance = ToolRoot:GetChildren()[1]
+	local SaveData = ObjectService:GetSaveData(TargetInstance)
+	-- GG easy
+	return SaveData
 end
 
-function ToolService:FromSaveData(Data)
-	local Name = Data.Name
-	local root = {}
-	for ItemName, ItemList in pairs(Data.Items) do
-		root[ItemName] = {}
-		print("ItemName: " .. ItemName)
-		for i, itemd in pairs(ItemList) do
-			local data = ObjectService:CreateObjectFromSaveData(itemd)
-			print(data)
-			table.insert(root[ItemName], data)
-		end
-	end
-	print(Name, root, "from toolservice")
-	return Name, root
+function ToolService:CreateFromSaveData(Player,Data)
+	local Inst = ObjectService:FromSaveData(Data) 
+	self:CreateNormalData(Player, Inst)
 end
 
 function ToolService:SetCooldown(Hand, Time)
