@@ -41,6 +41,8 @@ function Object:SetProperty(Instance, PropertyName, PropertyValue, Group)
 	if not PropertyName then
 		error("No PropertyName provided to Object:SetProperty")
 	end 
+	-- Get root
+	local Instance = _G.Instinct.Services.ObjectService:GetMainPartRoot(Instance)
 	if not Instance:FindFirstChild(self.PropertyContainerName) then 
 		Instance.new(self.PropertyContainerClassName, Instance).Name = self.PropertyContainerName
 	end 

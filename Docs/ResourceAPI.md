@@ -19,6 +19,8 @@ bool CanGather [essential] provides info if the resource can be gathered with th
 *	Can be used for info strings to the UI. Warning strings or other styled strings are also provided. Must be a list of items. If item is a string, put it in "info" if CanGather and in "warn" if not CanGather. Styles can be hardcoded by putting a table with the Style and Text element ste.
 *	string/List necessaryAction. Should return a string or a list of strings of action identifiers which are necessary to gather this resource. For instance, ores can be gathered via the "Mine" action, which belongs to the "Pickaxe" tool.
 
+For any object: the object root can be saved. The ObjectService save method handles the case correctly for children of object roots. This is necessary, because otherwise properties can be set on non-root items, which are *NOT* saved.
+
 Tools 
 =======
 
