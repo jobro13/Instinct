@@ -16,3 +16,9 @@ Other solution is just to create a PutFirst for actions where table.insert()
 Add cooldown API to tools
 
 Add the SetProperty on client to work with server calls
+
+TODO: CoolDown should be implemented into ToolService.
+
+
+Make the a ctiosn work. Cache first, then put handlers to do action and registre the already existing actions
+

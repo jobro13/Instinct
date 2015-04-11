@@ -102,7 +102,8 @@ function Move:DoDBCAction(key)
 	 NormalMover:DoubleClicked(key)
 end
 
-function Move:DoAction(mbutton)
+function Move:DoAction(mbutton, ActionName)
+	-- ActionName is always "Move" here.
 	print(mbutton, mbutton == "m1")
 	if mbutton == "m1" then
 		print(NormalMover.MoveRoot)
@@ -142,8 +143,15 @@ function Move:DoAction(mbutton)
 	end
 end
 
-function IntentionService
+-- LOL? Via current implementation, IntentionService already caches
+-- Which means we don't have to cache here!? OK 
+-- Hrm.
 
+-- Cache action;
+-- return action identifer, can be retrieved via IntentionService:GetAction()
+function Move:CacheAction() 
+	if _G.Instinct.Services.IntentionService:GetOptions()
+end 
 ToolService:RegisterTool("Move", Move)
 
 

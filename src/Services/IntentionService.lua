@@ -39,6 +39,7 @@ function IntentionService:GetAction(Name)
 	end 
 end 
 
+
 -- For scalability create rules for different targets
 -- For now rules are inside jobs
 
@@ -49,18 +50,17 @@ end
 -- This function should be the main controller of tools and gather handlers
 
 --ForceReload to overwrite cache
+
+-- WARNING
+-- Define LeftAction AND RightAction if this is called from ANY TOOL CACHE ACTION FUNCTION
+-- If this is NOT done, it will per definition stack overflow!
 function IntentionService:GetOptions(Target, LeftAction, RightAction, ForceReload)
+	local Target = ObjectService:GetMainPartRoot(Target)
 	if self.CachedTarget == Target and not ForceReload then 
 		return self.CachedOptions
 	end 
 
-	-- Better if this gets LeftAction/RightActionb itself
-
-	----- GET ACTIONS FROM TOOLS -----
-	local LeftAction = nil;
-	local RightAction = nil;
-
-	-- Execute a list of possible actions
+		-- Execute a list of possible actions
 	-- Tool actions overrides NonTool actions
 	-- Actual processing of TARGETS should be done by a script
 	-- Not done in this service
@@ -86,22 +86,42 @@ function IntentionService:GetOptions(Target, LeftAction, RightAction, ForceReloa
 		InfoStrings = {},
 		WarningStrings = {}, 
 		TargetName = nil,
-		ToolActions = {
+	--[[	ToolActions = {
 			Left = nil, 
 			Right = nil,
-		}
+		}--]]
 	}
 	Out.Actions = {
 		LeftHand = LeftAction;
 		RightHand = RightAction; 
 		-- "no hand" tool for non-tool actions
-		NoHand = NonToolAction;
+	--	NoHand = NonToolAction;
+	--No, is actually set to left hand.
 	}
 
 	setmetatable(Out.Gather.WarningStrings, {__index=table})
 	setmetatable(Out.Gather.InfoStrings, {__index=table})
 
-	local function ParseAction(Action)
+	-- Better if this gets LeftAction/RightActionb itself
+
+	----- GET ACTIONS FROM TOOLS -----
+	-- Can't do that from here. Provide LeftAction and RightAction via args
+	-- Otherwise we will get recursive calls -> stack overflow.
+
+	local LeftAction, RightAction = LeftAction, RightAction 
+	if not LeftAction then 
+		-- > Cache action
+		if ToolService.EquippedLeft then 
+			LeftAction = ToolService.EquippedLeft:CacheAction(Out, Target, ToolService.EquippedLeft)
+		end
+	end 
+
+	if not RightAction then 
+		-- > Cache 
+		if ToolService.EquippedRight then 
+			RightAction = ToolService.EquippedRight:CacheAction(Out, Target, ToolService.EquippedRight) 
+		end 
+	end
 
 
 	if Object.CheckGather then 
@@ -126,7 +146,7 @@ function IntentionService:GetOptions(Target, LeftAction, RightAction, ForceReloa
 						--> Text : passed string
 			-- > Required action to Gather (string Identifier, or a list of possible actions)
 			-- > optional arguments are deprecated as of Insv2
-				local ArgList = {Object:CheckGather(Target)}
+				local ArgList = {Object:CheckGather(Target,Out)}
 				local CanGather = ArgList[1]
 				if type(CanGather) ~= "bool" then
 					error("Cannot parse CheckGather rule for " .. Target.Name .. " because a non-bool is returned")

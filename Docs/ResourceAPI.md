@@ -12,6 +12,8 @@ Resources
 Resources are the basic Instinct Object data container. These provide additional data, such as hardness, rarity, material, etc. Every instinct object has the following important handles;
 
 ** CheckGather ** [IMPLEMENTED]
+INPUTS: Target, OptList
+Optlist can be maniuplated directly from the functions, writing to the OPtion state. This should be a more flexible implementation of the Option function.
 A function which is used to figure out if a resource can be gathered or not. Should return the following arguments;
 
 bool CanGather [essential] provides info if the resource can be gathered with the given input arguments.
@@ -41,7 +43,7 @@ For example, an Axe can have the {"Chop"} ActionList. Chop should be defined in 
 
 Every action NEEDS a :Cache and a :Run field. 
 
-Cache (input: Target, UsedTool) where Target is an Instance and UsedTool is a instinct tool object, describing the used tool. Cache returns a boolean if the action can be done or not. Note that Cache is also used by IntentionService:GetOption which figures out what action the tool can take on the current target.
+CacheAction input: OptList, MouseButton, Target, UsedTool) where Target is an Instance and UsedTool is a instinct tool object, describing the used tool. Cache returns a boolean if the action can be done or not. Note that Cache is also used by IntentionService:GetOption which figures out what action the tool can take on the current target.
 
 The result is saved in the Tool cache for the current target.
 
@@ -76,17 +78,18 @@ Simple flowchart for actions:
 ### Tool Hooks
 
 In order to maintain flexibility, tool hooks can be added. For Instance, the following functions may be defined and have the same effects as roblox events;
+This should be done on the instinct objects.
 
-*	Tool:Equip()
-*	Tool:Unequip() 
+*	Tool:ToolEquip()
+*	Tool:ToolUnequip() 
 
 The first function *does something* and the second one should GC this. 
 
-*	Tool:Create()
+*	Tool:ToolCreate()
 
 Constructor. Called on Tool creation.
 
-*	Tool:Destroy()
+*	Tool:ToolDestroy()
 
 Destroying a tool is the function which gets called when a tool gets converted to a normal instance again. Think of dropping the tool.
 
