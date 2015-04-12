@@ -27,13 +27,14 @@ Eat.Type = "NonPhysical"
 Eat.Name = "Eat"
 
 function Eat:Create() end
-
+-- Change eat to work via default GUI
+-- 
 function Eat:OnEquip()
 	Instinct.Services.KeyService.State = "Eating"
-	self.Gui = Instinct.Create(ToolTip)
-	self.Cache = {}
+--	self.Gui = Instinct.Create(ToolTip)
+--	self.Cache = {}
 	--self.Gui:Hide()
-	delay(0, function()
+	--[[delay(0, function()
 		local Mouse = game.Players.LocalPlayer:GetMouse()
 		while Instinct.Services.KeyService.State == "Eating" do
 			local targ = Mouse.Target
@@ -57,24 +58,42 @@ function Eat:OnEquip()
 				self.Cache[targ] = nil -- GC last targ [ifexist]
 			end
 		end
-	end)
+	end)--]]
 end
 
 function Eat:OnUnequip()
 	Instinct.Services.KeyService.State = "Default"
-	self.Cache = {}
-	self.Gui:Destroy()
+	--self.Cache = {}
+--	self.Gui:Destroy()
 end
 
-function Eat:DoAction(mbutton)
-	if mbutton == "m1" then
-		local Mouse = game.Players.LocalPlayer:GetMouse()
-		local targ = Mouse.Target
-		if self.Cache[targ or ""] then
-			NutritionService:Eat(targ, self.Cache[targ])
+function Eat:DoAction(Target)
+--	if mbutton == "m1" then
+		local Opt = IntentionService:GetOptStruct()
+		local Cached = self:CacheAction(Opt, Target)
+		if Cached == "Eat" then 
+			local Mouse = game.Players.LocalPlayer:GetMouse()
+			local targ = Mouse.Target
+			if self.Cache[targ or ""] then
+				NutritionService:Eat(targ, self.Cache[targ])
+			end
 		end
-	end
+--	end
 end
+
+function Eat:CacheAction(Out, Target) 
+	if NutritionService:IsEdible(Target) then 
+		-- Yay!
+		local Data = NutritionService:GetNutritionInfo(Target)
+		for NutritionName, NutritionValue in pairs(Data) do 
+			local NutrVal = ((math.floor(NutritionValue * 100 + 0.5)-0.5)/100)
+			Out.Gather.InfoStrings:insert(NutritionName..": "..NutrVal)
+		end
+
+
+		return "Eat"
+	end 
+end 
 
 ToolService:RegisterTool("Eat", Eat)
 
@@ -102,11 +121,11 @@ function Move:DoDBCAction(key)
 	 NormalMover:DoubleClicked(key)
 end
 
-function Move:DoAction(mbutton, ActionName)
+function Move:DoAction(Target, ActionName)
 	-- ActionName is always "Move" here.
-	print(mbutton, mbutton == "m1")
-	if mbutton == "m1" then
-		print(NormalMover.MoveRoot)
+	--print(mbutton, mbutton == "m1")
+	--if mbutton == "m1" then
+	--	print(NormalMover.MoveRoot)
 		if NormalMover.MoveRoot == nil then
 			local Mouse = game.Players.LocalPlayer:GetMouse()
 			local targ = Mouse.Target
@@ -137,10 +156,10 @@ function Move:DoAction(mbutton, ActionName)
 				end
 			end
 		else
-			print("->clicked")
+		--	print("->clicked")
 			NormalMover:Clicked(mbutton)
 		end
-	end
+	--end
 end
 
 -- LOL? Via current implementation, IntentionService already caches

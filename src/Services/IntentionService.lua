@@ -39,6 +39,36 @@ function IntentionService:GetAction(Name)
 	end 
 end 
 
+-- returns an opt struct.
+-- can be used as "dummy"
+function IntentionService:GetOptStruct(LeftAction, RightAction)
+	local Out = {}
+	Out.Move = {
+		Possible = nil -- Setting possible is a hard-set
+	}
+	Out.Gather = {
+		Possible = nil
+		InfoStrings = {},
+		WarningStrings = {}, 
+		TargetName = nil,
+	--[[	ToolActions = {
+			Left = nil, 
+			Right = nil,
+		}--]]
+	}
+	Out.Actions = {
+		LeftHand = LeftAction;
+		RightHand = RightAction; 
+		-- "no hand" tool for non-tool actions
+	--	NoHand = NonToolAction;
+	--No, is actually set to left hand.
+	}
+
+	setmetatable(Out.Gather.WarningStrings, {__index=table})
+	setmetatable(Out.Gather.InfoStrings, {__index=table})
+	return Out
+end 
+
 
 -- For scalability create rules for different targets
 -- For now rules are inside jobs
@@ -78,29 +108,7 @@ function IntentionService:GetOptions(Target, LeftAction, RightAction, ForceReloa
 	--@Start job Move
 	-- If can gather then move is also OK
 	-- Gather is NOK if Volume too high
-	Out.Move = {
-		Possible = nil -- Setting possible is a hard-set
-	}
-	Out.Gather = {
-		Possible = nil
-		InfoStrings = {},
-		WarningStrings = {}, 
-		TargetName = nil,
-	--[[	ToolActions = {
-			Left = nil, 
-			Right = nil,
-		}--]]
-	}
-	Out.Actions = {
-		LeftHand = LeftAction;
-		RightHand = RightAction; 
-		-- "no hand" tool for non-tool actions
-	--	NoHand = NonToolAction;
-	--No, is actually set to left hand.
-	}
-
-	setmetatable(Out.Gather.WarningStrings, {__index=table})
-	setmetatable(Out.Gather.InfoStrings, {__index=table})
+	local Out = self:GetOptStruct(LeftAction, RightAction)
 
 	-- Better if this gets LeftAction/RightActionb itself
 

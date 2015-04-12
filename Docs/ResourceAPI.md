@@ -105,3 +105,13 @@ For example, an axe with a handle should have the primarypart set to handle. Gri
 
 Context Group "Tool" will be used to store info such as hotkeys and equipped state.
 Server side handling: The tool MODEL is loaded. PrimaryPart is either the sole part in it or a complete tool. Once equip the whole model is copied
+
+Low-level tools have a :DoAction and :Cache field;
+
+:DoAction(Target, Action)
+Target is the instinct target; action is the action identifier (string)
+
+:Cache(OptList, Target)
+OptList is IntentionService option list, can be used to add info to the :GetOption function
+
+Target is the current target.
