@@ -10,8 +10,8 @@ end
 
 function Commands.Chat(Data, Message, Mode, Sender)
 
-	if _G.Instinct.Gui and _G.Instinct.Gui.Chat then 
-		_G.Instinct.Gui.Chat:Process(Message, Mode, Sender)
+	if _G.Instinct.UI and _G.Instinct.UI.Chat then 
+		_G.Instinct.UI.Chat:Process(Message, Mode, Sender)
 	end
 end
 
