@@ -363,8 +363,9 @@ function DefaultTool:CacheAction(OptList, Target)
 	local Object = ObjectService:GetObject(Target.Name)
 	if Object then 
 		-- Hrm not sure, can add :GetAncestryProperties for inherited actions.
-		if self.AvailableActions then 
-			for _, AName in pairs(self.AvailableActions) do 
+		local ActionTable = self.Object:GetAncestryProperties("AvailableActions", true) 
+		if ActionTable then 
+			for _, AName in pairs(ActionTable) do 
 				local ActObj = IntentionService:GetAction(AName, "Tool")
 				if ActObj then 
 					if ActObj:Cache(OptList, Target, self) then 
@@ -381,7 +382,7 @@ function DefaultTool:CacheAction(OptList, Target)
 	end
 
 end
-
+-- Runs action ONLY if re-caching actions returns the same actionname
 function DefaultTool:DoAction(Target, ActionName)
 	if ActionName and self:CacheAction(IntentionService:GetOptStruct(), Target) == ActionName then 
 		local Act = IntentionService:GetAction(ActionName)

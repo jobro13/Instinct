@@ -10,6 +10,8 @@ return (function()
 local IntentionService = _G.Instinct.Services.IntentionService
 local ToolService = _G.Instinct.Services.ToolService
 local DamageService = _G.Instinct.Services.DamageService
+local Knapping = _G.Instinct.Libraries.Knapping
+
 
 local toadd ={}
 local function mk(name, type)
@@ -164,9 +166,23 @@ end
 local Knap = mk("Knap", "Tool")
 
 function Knap:Cache(OptList, Target, Tool)
-
+	-- Target should be gatherable;
+	if OptList.Gather.PossibleNaive then 
+		local Obj = ObjectService:GetObject(Target)
+		if Obj then 
+			if Obj.Material == "Stone" then 
+				return "Knap"
+			end
+		end 
+	end  
 end 
 
+function Knap:Run(Target, Tool)
+	Knapping:Knap(Target,Tool)
+end 
+
+
+local Plant = mk("Plant", "Tool")
 
 
 
