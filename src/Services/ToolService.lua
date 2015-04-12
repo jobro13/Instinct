@@ -295,7 +295,10 @@ function ToolService:AddTool(ToolInstance,PickedUp)
 		"ToolCreate", 
 		"ToolDestroy", 
 		"ToolUnequip",
-		"ToolDestroy"
+		"ToolEquip",
+		"ToolDestroy",
+		"AvailableActions",
+		"ToolGetGrip",
 	}
 
 	local Object = ObjectService:GetObject(ToolName)
