@@ -394,12 +394,12 @@ function DefaultTool:DoAction(Target, ActionName)
 end
 
 function DefaultTool:GetGrip()
-	print('get grip')
-	local norm = self.Tool
 	local other = CFrame.new()
-	if norm then
+	if not self.ToolGetGrip then
 		other = CFrame.new(0, -0.5, 0)
-	end
+	else 
+		other = self:ToolGetGrip() 
+	end 
 	return CFrame.new(0, -1, 0) * CFrame.Angles(math.pi/2,0,0) * other
 end
 
