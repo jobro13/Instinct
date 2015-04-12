@@ -302,7 +302,7 @@ function ToolService:AddTool(ToolInstance,PickedUp)
 	}
 
 	local Object = ObjectService:GetObject(ToolName)
-
+	Tool.Object = Object
 	for _, MemberName in pairs(ToCheck) do 
 		if Object[MemberName] then 
 			Tool[MemberName] = Object[MemberName]

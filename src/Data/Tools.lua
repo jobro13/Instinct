@@ -367,14 +367,14 @@ function DefaultTool:CacheAction(OptList, Target)
 			for _, AName in pairs(self.AvailableActions) do 
 				local ActObj = IntentionService:GetAction(AName, "Tool")
 				if ActObj then 
-					if ActObj:CacheAction(OptList, Target, self) then 
-						return AName,  
+					if ActObj:Cache(OptList, Target, self) then 
+						return AName  
 					end 
 				end 
 			end 
 		end 
 		for _,Action in pairs(IntentionService.Actions.DefaultTools or {}) do 
-			if Action:CacheAption(OptList, Target, self) then 
+			if Action:Cache(OptList, Target, self) then 
 				return Action.Name 
 			end
 		end 

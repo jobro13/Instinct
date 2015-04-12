@@ -51,7 +51,8 @@ function IntentionService:GetOptStruct(LeftAction, RightAction)
 		Possible = nil -- Setting possible is a hard-set
 	}
 	Out.Gather = {
-		Possible = nil
+		Possible = nil,
+		PossibleNaive = nil,
 		InfoStrings = {},
 		WarningStrings = {}, 
 		TargetName = nil,
@@ -114,6 +115,21 @@ function IntentionService:GetOptions(Target, LeftAction, RightAction, ForceReloa
 	-- Gather is NOK if Volume too high
 	local Out = self:GetOptStruct(LeftAction, RightAction)
 
+	-- Create naive pointer;
+	-- Used by tools. 
+	if Object.CheckGather then 
+		if type(Object.CheckGather) == "boolean" then 
+			Out.Gather.PossibleNaive = Object.CheckGather 
+		elseif type(Object.CheckGather) == "function" then 
+			-- write to a new out
+			Out.Gather.PossibleNaive = Object:CheckGather(Target, self:GetOptStruct())
+		end 
+	end 
+
+	
+
+
+
 	-- Better if this gets LeftAction/RightActionb itself
 
 	----- GET ACTIONS FROM TOOLS -----
@@ -145,6 +161,9 @@ function IntentionService:GetOptions(Target, LeftAction, RightAction, ForceReloa
 				Out.Gather.WarningStrings:insert("This resource is too large to gather.")
 			else 
 				Out.Gather.Possible = Use 
+				if Use then 
+					Out.Gather.TargetName = Target.Name 
+				end 
 			end	
 		elseif type(Use) == "function" then 
 			-- Expecting return values, in order;

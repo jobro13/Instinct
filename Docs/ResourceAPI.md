@@ -98,6 +98,14 @@ Constructor. Called on Tool creation.
 
 *	Tool:ToolDestroy()
 
+*	Tool.AvailalbeActions
+	List of checks to do inside the Tool namespace of Actions;
+
+*	Tool.ToolGetGrip;
+	function to run when getting the grip for the current tool;
+
+*	Tool.Object; Pointer to Instinct object.
+
 Destroying a tool is the function which gets called when a tool gets converted to a normal instance again. Think of dropping the tool.
 
 Note that :Equip() and :Unequip() allow GUI support. via the Tool argument passed on to Actions these hooks can figure out if, for example, a bucket is filled with water. The actual filling could be shown in the GUI.

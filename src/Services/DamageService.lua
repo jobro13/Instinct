@@ -62,6 +62,19 @@ function DamageService:IsPlayer(Target)
 	end
 end
 
+-- Basically checks if this is a player we can attack. Returns a bool.
+function DamageService:CanAttack(TargetInstance)
+	local Mouse = game.Players.LocalPlayer:GetMouse()
+	local Char = game.Players.LocalPlayer.Character
+	if Char:FindFirstChild("Torso") and (Mouse.Hit.p - Char.Torso.Position).magnitude < 5 then
+		local IsPlayer = self:IsPlayer(TargetInstance)
+		if IsPlayer then
+			return true 
+		end 
+	end
+	return false 
+end 
+
 function DamageService:GetDamageInfo(Tool, TargetInstance)
 	if not TargetInstance then return end
 	if os.time() - (self.Cooldowns[Tool.Hand] or 0) < 0 then

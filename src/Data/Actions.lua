@@ -12,14 +12,14 @@ local ToolService = _G.Instinct.Services.ToolService
 local DamageService = _G.Instinct.Services.DamageService
 
 local toadd ={}
-local function mk(name)
+local function mk(name, type)
 	local o = {Name=name}
-	table.insert(toadd, o)
+	table.insert(toadd, {o,type})
 	return o
 end
 
 -- START ACTION INSPECT DEAD CORPSE 
-local InspectBackpack = mk "Inspect Backpack"
+local InspectBackpack = mk("Inspect Backpack", "Default")
 
 local IBS_Open = nil; -- inspect backpack open debouncher.
 
@@ -78,30 +78,106 @@ function InspectBackpack:Run(targ)
 	end
 end
 
+
+		local function hashumanoid(t)
+			local c = t
+			repeat
+				c = c.Parent
+			until (c and c:FindFirstChild("Humanoid")) or not c
+			if c and c:FindFirstChild("Humanoid") then
+				return true, c.Name
+			end
+		end
+
+
+function InspectBackpack:Cache(OptList, Target, Tool)
+
+		local hum, name = hashumanoid(Target)
+		if Target:IsDescendantOf(game.Workspace.Corpses) then 
+			local n = Inst 
+			while n.Parent ~= game.Workspace.Corpses do
+				n = n.Parent
+			end
+			-- we found root which is n.
+			local cName = n.Name 
+			bool = false 
+			if n:FindFirstChild("Clothing") and Target:IsDescendantOf(n.Clothing) then
+				if n.Clothing:FindFirstChild("Backpack") then
+					if Target == n.Clothing.Backpack or Target:IsDescendantOf(n.Clothing.Backpack) then
+						-- it backpack!
+						OptList.Gather.TargetName = "Backpack of "..cName
+						return true
+					end
+				end
+			else 
+				-- is a corpse
+				OptList.Gather.TargetName = "Corpse of " .. cName 
+				OptList.Gather.InfoStrings:insert("I wonder what happened?")
+			end 
+		elseif hum then 
+			-- Show player names.
+			OptList.Gather.TargetName = name 
+		end 
+
+end 
+
+
 ------------------------ END OF ACTION	
 
 -- Shake tree action 
-local ShakeTree = mk "Shake tree"
+local ShakeTree = mk("Shake tree", "Default")
+
+function ShakeTree:Cache()
+	-- if a tree then, return true
+end
 
 function ShakeTree:Run(targ)
-	print("oh very shake tree Kappa")
+
 end
 ------------------------ END OF ACTION
 -- Attack action --
-local Attack = mk "Attack"
+local Attack = mk("Attack", {"Default", "DefaultTool"})
 
-function Attack:Run(Targ, Hand)
-	print("WAT attack? jobro13 so trashhh XDDD")
-	local Tool = ToolService["Equipped"..Hand]
-	print(Tool, Hand)
+function Attack:Run(Targ, Tool)
 	if Tool then
-		print("EXISITSerino	")
 		DamageService:Attack(Tool, Targ)
 	end
 end
+
+function Attack:Cache(OptList, Target, Tool)
+	if Tool then 
+		if DamageService:CanAttack(Target) then 
+			OptList.Gather.TargetName = select(2,hashumanoid(Target))
+			return true 
+		end
+	end 
+end 
+
+
 ------------------------ END OF ACTION
+
+
+--- ////////////////
+-- Start TOOL actions
+-- /////////////////
+
+local Knap = mk("Knap", "Tool")
+
+function Knap:Cache(OptList, Target, Tool)
+
+end 
+
+
+
+
 for _,action in pairs(toadd) do
-	IntentionService:AddAction(action)
+	if type(action[2]) ~= "table" then 
+		IntentionService:AddAction(action[1], action[2])
+	else 
+		for i, tname in pairs(action[2]) do 
+			IntentionService:AddAction(action[1], tname)
+		end 
+	end
 end
 	
 end)

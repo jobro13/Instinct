@@ -59,8 +59,9 @@ Stone.BuildingMaterial = true
 Stone.Hidden = true -- hide stone from resources
 Stone.BaseDamage = 3
 Stone.DamageType = "Crush"
+Stone.AvailableActions = {"Knap"}
 
-function Stone:CheckGather(Inst)
+function Stone:CheckGather(Inst, OptList)
 	if (Inst:IsA("BasePart") and Inst.Anchored) or Inst:FindFirstChild("Weld") then 
 		return false, {"Use a pickaxe to gather this resource"}, "Mine"
 	end
