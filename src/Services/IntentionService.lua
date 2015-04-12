@@ -139,7 +139,7 @@ function IntentionService:GetOptions(Target, LeftAction, RightAction, ForceReloa
 	if Object.CheckGather then 
 		local Use = Object.CheckGather 
 		if type(Use) == "boolean" then 
-			if Use and ObjectService:GetVolume(Inst) > ObjectService:GetVolume(Target)
+			if Use and ObjectService:GetVolume(Inst) > ObjectService:GetVolume(Target) then 
 				Out.Move.Possible = true 
 				Out.Gather.Possible = false 
 				Out.Gather.WarningStrings:insert("This resource is too large to gather.")
@@ -160,6 +160,11 @@ function IntentionService:GetOptions(Target, LeftAction, RightAction, ForceReloa
 			-- > optional arguments are deprecated as of Insv2
 				local ArgList = {Object:CheckGather(Target,Out)}
 				local CanGather = ArgList[1]
+				if CanGather and ObjectService:GetVolume(Inst) > ObjectService:GetVolume(Target) then 
+					Out.Move.Possible = true 
+					Out.Gather.Possible = false 
+					Out.Gather.WarningStrings:insert("This resource is too large to gather.")
+				end 
 				if type(CanGather) ~= "bool" then
 					error("Cannot parse CheckGather rule for " .. Target.Name .. " because a non-bool is returned")
 				end 
