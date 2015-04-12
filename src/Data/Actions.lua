@@ -181,9 +181,47 @@ function Knap:Run(Target, Tool)
 	Knapping:Knap(Target,Tool)
 end 
 
+-- ///// --
 
 local Plant = mk("Plant", "Tool")
 
+function Plant:Cache(OptList, Target, Tool)
+	if Target and Target.Name == "FertileGround" then 
+		return "Plant"
+	end 
+end 
+
+function Plant:Run()
+	return true -- is a pure server call
+end 
+
+function Plant:RunServer(Target, ToolRoot)
+	warn("Planting not implemented yet.")
+end 
+
+-- ///// --
+
+local Chop = mk("Plant", "Tool")
+
+function Chop:Cache(OptList, Target,Tool)
+	local Object = ObjectService:GetObject(Target)
+	if Object then
+		local Value = Object:GetProperty(Target, "ChoppedDown")
+		if Object:IsA("Wood") then 
+			if Value == nil or Value == 1 then 
+				return "Chop"
+			end 
+		end 
+	end  
+end 
+
+function Chop:Run(Target, Tool)
+	return true 
+end 
+
+function Chop:RunServer(Target, Tool)
+	warn("Not implemented yet, (chop)")
+end 
 
 
 for _,action in pairs(toadd) do
