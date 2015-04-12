@@ -360,11 +360,37 @@ function DefaultTool:CacheAction(OptList, Target)
 	-- Check: AvailableACtions
 	-- Get these actions from IntentionService form Tool namespace
 	-- Call their :Cache field
-	
+	local Object = ObjectService:GetObject(Target.Name)
+	if Object then 
+		-- Hrm not sure, can add :GetAncestryProperties for inherited actions.
+		if self.AvailableActions then 
+			for _, AName in pairs(self.AvailableActions) do 
+				local ActObj = IntentionService:GetAction(AName, "Tool")
+				if ActObj then 
+					if ActObj:CacheAction(OptList, Target, self) then 
+						return AName,  
+					end 
+				end 
+			end 
+		end 
+		for _,Action in pairs(IntentionService.Actions.DefaultTools or {}) do 
+			if Action:CacheAption(OptList, Target, self) then 
+				return Action.Name 
+			end
+		end 
+	end
+
 end
 
-function DefaultTool:DoAction(MouseButton, Action)
-	self.Cached[]
+function DefaultTool:DoAction(Target, ActionName)
+	if ActionName and self:CacheAction(IntentionService:GetOptStruct(), Target) == ActionName then 
+		local Act = IntentionService:GetAction(ActionName)
+		local ShRunOnServer = Act:Run(Target, self)
+		if ShRunOnServer then 
+			-- Communicate with server to run this on server
+			_G.Instinct.Communicator:Send("ExecuteToolAction", self.Tool, Target, ActionName)
+		end 
+	end 
 end
 
 function DefaultTool:GetGrip()

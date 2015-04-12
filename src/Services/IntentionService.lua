@@ -39,6 +39,10 @@ function IntentionService:GetAction(Name)
 	end 
 end 
 
+function IntentionService:GetActionFromNamespace(Name, NameSpace)
+	return (self.Actions[NameSpace] and self.Actions[NameSpace][Name])
+end 
+
 -- returns an opt struct.
 -- can be used as "dummy"
 function IntentionService:GetOptStruct(LeftAction, RightAction)
@@ -120,7 +124,7 @@ function IntentionService:GetOptions(Target, LeftAction, RightAction, ForceReloa
 	if not LeftAction then 
 		-- > Cache action
 		if ToolService.EquippedLeft then 
-			LeftAction = ToolService.EquippedLeft:CacheAction(Out, Target, ToolService.EquippedLeft)
+			LeftAction = ToolService.EquippedLeft:CacheAction(Out, Target)
 		end
 	end 
 

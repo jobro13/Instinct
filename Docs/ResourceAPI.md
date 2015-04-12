@@ -43,12 +43,13 @@ For example, an Axe can have the {"Chop"} ActionList. Chop should be defined in 
 
 Every action NEEDS a :Cache and a :Run field. 
 
-CacheAction input: OptList, MouseButton, Target, UsedTool) where Target is an Instance and UsedTool is a instinct tool object, describing the used tool. Cache returns a boolean if the action can be done or not. Note that Cache is also used by IntentionService:GetOption which figures out what action the tool can take on the current target. This boolean is thus retruned to IntentionService. (Code in Tools.lua, DefaultTool)
+CacheAction input: OptList, Target, UsedTool) where Target is an Instance and UsedTool is a instinct tool object, describing the used tool. Cache returns a boolean if the action can be done or not. Note that Cache is also used by IntentionService:GetOption which figures out what action the tool can take on the current target. This boolean is thus retruned to IntentionService. (Code in Tools.lua, DefaultTool)
 
 The result is saved in the Tool cache for the current target.
 
 Run (input: Target, UsedTool) Runs the given action. This should **NOT** be called directly - this should be done via IntentionService. This service should first delete the cache and re-cache to figure out if the action is still OK to do. This should return a boolean. If this is true, the service will ping to the server tha the :RunServer field should be called, with the same arguments. Note that an Instinct Tool does not exist on the server, which means that the ToolRoot is passed instead. This should not be a problem as server can get the relevant data from ObjectService. Client data shouldn't be on the server anyways as that is local. UsedTool can be nil (in case of Default action). Can optionally return a second argument describing the TargetName, only necessary for "default" functions. (for instance, show a player name on hover).
 If this second argument is returned but the action argument is NOT set then still TargetName will be overridden.
+Calls ExecuteToolAction with self.Tool, Target, ActionName
 
 RunServer (input: Target, ToolRoot) where ToolRoot is the actual ToolRoot instance from the database. Runs given action on the server as ordered by Run from client. if possible this service can be expanded to accept arguments from the Run function. Shouldn't be a big problem when taht issue arises.
 
