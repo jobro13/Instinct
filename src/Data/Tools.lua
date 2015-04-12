@@ -67,8 +67,9 @@ function Eat:OnUnequip()
 --	self.Gui:Destroy()
 end
 
-function Eat:DoAction(Target)
+function Eat:DoAction(Target, ActionName)
 --	if mbutton == "m1" then
+	if ActionName == "Eat" then 
 		local Opt = IntentionService:GetOptStruct()
 		local Cached = self:CacheAction(Opt, Target)
 		if Cached == "Eat" then 
@@ -78,7 +79,7 @@ function Eat:DoAction(Target)
 				NutritionService:Eat(targ, self.Cache[targ])
 			end
 		end
---	end
+	end
 end
 
 function Eat:CacheAction(Out, Target) 
@@ -126,9 +127,9 @@ function Move:DoAction(Target, ActionName)
 	--print(mbutton, mbutton == "m1")
 	--if mbutton == "m1" then
 	--	print(NormalMover.MoveRoot)
+	if ActionName == "Move" then 
 		if NormalMover.MoveRoot == nil then
-			local Mouse = game.Players.LocalPlayer:GetMouse()
-			local targ = Mouse.Target
+			local targ = Target
 			local usetarg = Instinct.Services.ObjectService:GetMainPart(targ)
 			local o = Instinct.Services.ObjectService:GetObject((usetarg and usetarg.Name) or "")
 			print(usetarg)
@@ -142,24 +143,20 @@ function Move:DoAction(Target, ActionName)
 			end
 			if usetarg and o then 
 				-- LOL!?
-				if _G.Instinct.Services.IntentionService:CanGather(usetarg).Move.Possible then
-						local omg = usetarg
-						if omg then
+				local omg = Target
 							if not NormalMover.GettingMoveRoot then
-								print(omg:GetFullName())
+						
 								NormalMover:SelectTarget(omg)
 								NormalMover:ToMoveMode()
 							end
-						end
-				else 
-					-- not ok to build with this resource!
-				end
+				
+
 			end
 		else
 		--	print("->clicked")
 			NormalMover:Clicked(mbutton)
 		end
-	--end
+	end
 end
 
 -- LOL? Via current implementation, IntentionService already caches
@@ -168,8 +165,10 @@ end
 
 -- Cache action;
 -- return action identifer, can be retrieved via IntentionService:GetAction()
-function Move:CacheAction() 
-	if _G.Instinct.Services.IntentionService:GetOptions()
+function Move:CacheAction(OptList, Target) 
+	if _G.Instinct.Services.IntentionService:GetOptions(Target,"","").Move.Possible then
+		return "Move"
+	end 
 end 
 ToolService:RegisterTool("Move", Move)
 
@@ -205,16 +204,14 @@ function Build:DoDBCAction(key)
 	Mover:DoubleClicked(key)
 end
 
-function Build:DoAction(mbutton)
-	print(mbutton, mbutton == "m1")
-	if mbutton == "m1" then
-		print(Mover.MoveRoot)
+function Build:DoAction(Target, Action)
+	if Action == "Build" then 
 		if Mover.MoveRoot == nil then
-			local Mouse = game.Players.LocalPlayer:GetMouse()
-			local targ = Mouse.Target
+
+			local targ = Target
 			local usetarg = Instinct.Services.ObjectService:GetMainPart(targ)
 			local o = Instinct.Services.ObjectService:GetObject((usetarg and usetarg.Name) or "")
-			print(usetarg)
+
 			local Char = game.Players.LocalPlayer.Character
 			if Char then 
 				if Char:FindFirstChild("Torso") then
@@ -224,7 +221,7 @@ function Build:DoAction(mbutton)
 				end
 			end
 			if usetarg and o then 
-					if _G.Instinct.Services.IntentionService:GetOptions() then
+
 						local omg = Instinct.Services.ObjectService:GetMainPartRoot(targ)
 						if omg then
 							if not Mover.GettingMoveRoot then
@@ -234,15 +231,22 @@ function Build:DoAction(mbutton)
 								Mover:ToMoveMode()
 							end
 						end
-					end
+
 
 			end
 		else
-			print("->clicked")
 			Mover:Clicked(mbutton)
 		end
 	end
 end
+
+function Build:CacheAction(OptList, Target) 
+	local Obj = ObjectService:GetObject(Target.Name)
+	if IntentionService:GetOptions(Target, "", "").Move.Possible and Obj.BuildingMaterial then 
+		return "Building" 
+	end 
+end
+
 ToolService:RegisterTool("Build", Build)
 
 -- Start of ugly tool API - fix pls
@@ -253,27 +257,8 @@ local function inrange()
 	local center = game.Players.LocalPlayer.Character:FindFirstChild("Torso")
 	return (center.Position - game.Players.LocalPlayer:GetMouse().Hit.p).magnitude < 10
 end
-function DefaultTool:Create(TRoot, ObjData)
-	local find
-	print('scan')
-	for objname, objdata in pairs(ObjData) do
-		print(objname, objdata)
-		for i, item in pairs(objdata) do
-			print(i,item)
-			find = item
-			break
-		end
-		if find then
-			break
-		end
-	end
-	if find then
-		local this = find:Clone()
-		this.Parent = TRoot
-	end
-	
-	return self -- always
-end
+
+function DefaultTool:Create() end 
 
 -- Change how tools get and do actions.
 -- Should be documented!!
@@ -371,10 +356,11 @@ end
 -- OVERRIDE
 -- Cache action returns an ACTION NAME
 -- Cache action for target;
-function DefaultTool:CacheAction(Target)
-	if self.Cached then 
-		return self.Cached[Target]
-	end 
+function DefaultTool:CacheAction(OptList, Target)
+	-- Check: AvailableACtions
+	-- Get these actions from IntentionService form Tool namespace
+	-- Call their :Cache field
+	
 end
 
 function DefaultTool:DoAction(MouseButton, Action)

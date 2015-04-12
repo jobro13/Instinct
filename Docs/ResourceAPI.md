@@ -43,7 +43,7 @@ For example, an Axe can have the {"Chop"} ActionList. Chop should be defined in 
 
 Every action NEEDS a :Cache and a :Run field. 
 
-CacheAction input: OptList, MouseButton, Target, UsedTool) where Target is an Instance and UsedTool is a instinct tool object, describing the used tool. Cache returns a boolean if the action can be done or not. Note that Cache is also used by IntentionService:GetOption which figures out what action the tool can take on the current target.
+CacheAction input: OptList, MouseButton, Target, UsedTool) where Target is an Instance and UsedTool is a instinct tool object, describing the used tool. Cache returns a boolean if the action can be done or not. Note that Cache is also used by IntentionService:GetOption which figures out what action the tool can take on the current target. This boolean is thus retruned to IntentionService. (Code in Tools.lua, DefaultTool)
 
 The result is saved in the Tool cache for the current target.
 
@@ -74,6 +74,12 @@ Simple flowchart for actions:
 *->? Check right tool. Has action? Bin right action to Run that action.
 *-> If no action has been defined for left, figure out if a default action can be done, if so, push that
 *-> Elseif cangather -> Put gather as left action
+
+### Action Namespaces
+The following namespaces are defined:
+* Default. These actions are executed if no Left Hand actions are available. Can be used for "Inspect Backpack" or "Attack" (melee, with hands)
+* Tool. Namespace for general Tool actions. Is namespace where tools look in to get their actions from AvailableActions.
+* DefaultTools. Namespace for actions which **ALL** tools will check. "Attack" is something all tools can do.ß
 
 ### Tool Hooks
 
@@ -111,7 +117,6 @@ Low-level tools have a :DoAction and :Cache field;
 :DoAction(Target, Action)
 Target is the instinct target; action is the action identifier (string)
 
-:Cache(OptList, Target)
+:CacheAction(OptList, Target, Recheck)
 OptList is IntentionService option list, can be used to add info to the :GetOption function
 
-Target is the current target.

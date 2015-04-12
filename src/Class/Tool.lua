@@ -83,6 +83,7 @@ function Tool:Equip()
 	if self.OnEquip then
 		self:OnEquip()
 	end
+ 
 	--self.Equipped:fire()
 end
 
@@ -93,6 +94,7 @@ function Tool:Unequip()
 	if self.OnUnequip then
 		self:OnUnequip()
 	end
+
 end
 
 function Tool:CacheAction()
